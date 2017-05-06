@@ -3,7 +3,6 @@ module Graph where
 import Data.Maybe
 import Data.List
 import qualified Data.IntMap.Strict as Map
-import Data.IntMap.Merge.Strict as MapMerge
 import Control.Monad.State.Lazy
 import Control.Monad
 import Control.Monad.Reader

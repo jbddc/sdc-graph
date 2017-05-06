@@ -21,6 +21,8 @@ executable graph
   build-depends:       base >= 4.7 && < 5
                       , random
                       , mtl >= 2.2.1
-                      , containers >= 0.5.10
-                      , graph-generators
-                      , fgl
+                      , containers >= 0.5
+                      , timeit
+                      , Chart
+                      , Chart-cairo
+                      , colour
