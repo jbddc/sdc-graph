@@ -60,6 +60,7 @@ avg_run cmd times v = do
   where average xs = realToFrac (sum xs) / genericLength xs
 
 titles = ["Number of Nodes"]
+title = ["Degree"]
 
 plotIt filename values = toFile def filename $ do
     layout_title .= "Average Edges Needed till Connected Graph"
@@ -68,7 +69,7 @@ plotIt filename values = toFile def filename $ do
     plot $ fmap plotBars $ bars titles (addIndexes (map snd values))
 
 plotItDegree filename values = toFile def filename $ do
-    layout_title .= "Degrees Per Edges"
+    layout_title .= "Degrees Per Node"
     layout_title_style . font_size .= 10
     layout_x_axis . laxis_generate .= autoIndexAxis (map fst values)
-    plot $ fmap plotBars $ bars titles (addIndexes (map snd values))
+    plot $ fmap plotBars $ bars title (addIndexes (map snd values))
