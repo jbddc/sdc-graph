@@ -2,12 +2,12 @@ name:                graph
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/githubuser/graph#readme
+homepage:            https://github.com/jbddc/sdc-graph#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Author name here
+author:              Author  Joao Costa, Rafael Barbosa
+maintainer:          a70430@alunos.uminho.pt
+copyright:           2017 Author Joao Costa, Rafael Barbosa
 category:            Web
 build-type:          Simple
 cabal-version:       >=1.10
