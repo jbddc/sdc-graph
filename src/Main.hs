@@ -2,6 +2,7 @@ module Main where
 
 import Graph
 import RandomAttachment
+import PrefAttachment
 import System.Environment
 import System.TimeIt
 import System.IO
@@ -10,7 +11,6 @@ import Control.Monad
 
 import Graphics.Rendering.Chart.Backend.Cairo
 import Graphics.Rendering.Chart.Easy
-import Data.Colour.SRGB
 
 main :: IO ()
 main = do
@@ -26,29 +26,36 @@ runCmd :: String -> IO Bool
 runCmd s = let
   w = words s
   in case w!!0 of
-     "random" -> shellRandom (tail w) 
-     "preferential" -> return True
+     "random" -> shellExec runRandomAttachment w 
+     "pref" -> shellExec runPrefAttachment w
      "exit" -> return False
      _ -> printHelp >> return True
 
-shellRandom :: [String] -> IO Bool
-shellRandom (scl:(x:[])) = do
+shellExec :: (Int -> IO ((Graph Int),Int)) -> [String] -> IO Bool
+shellExec cmd (cm:(scl:(x:[]))) = do
     let upper_bound = (read x :: Int)
     let scale = (read scl :: Int)
     let delta = list_scale scale upper_bound
-    results <- mapM (avg_run_random 10) delta 
+    results <- mapM (avg_run cmd 10) delta 
     let plot_data = map (\(pos,edges) -> (show pos,[edges])) $ zip delta results
-    plotIt ("result_random_"++x++".png") plot_data
+    plotIt ("res_avg_"++cm++"_"++x++".png") plot_data
+    plot_data2 <- cmd upper_bound
+    plotItDegree ("res_degree_"++cm++"_"++x++".png") $ map (\(x,y) -> (show x,[y])) $ sortBy myCompFunc $ degrees $ fst plot_data2
     return True
-shellRandom _ = printHelp >> return True
+shellExec _ _ = printHelp >> return True
 
-printHelp = putStrLn "===Available Commands===\nrandom [scale] [upperbound]\npreferential [scale] [upperbound]\nhelp\nexit"
+myCompFunc (x1,y1) (x2,y2) 
+  | y1 < y2 = GT
+  | y1 > y2 = LT
+  | otherwise = EQ
 
-list_scale scale ub = takeWhile (<=ub) $ map (\x -> scale*x) [1..]
+printHelp = putStrLn "===Available Commands===\nrandom [scale] [upperbound]\npref [scale] [upperbound]\nhelp\nexit"
 
-avg_run_random :: Int -> Int -> IO Double
-avg_run_random times v = do
-    results <- mapM (\_ -> (runRandomAttachment v)) [0..times]
+list_scale scale ub = takeWhile (<=ub) $ map (\x -> scale*x) [2..]
+
+avg_run :: (Int -> IO ((Graph Int),Int)) -> Int -> Int -> IO Double
+avg_run cmd times v = do
+    results <- mapM (\_ -> (cmd v)) [0..times]
     return $ average $ map snd results
   where average xs = realToFrac (sum xs) / genericLength xs
 
@@ -56,6 +63,12 @@ titles = ["Number of Nodes"]
 
 plotIt filename values = toFile def filename $ do
     layout_title .= "Average Edges Needed till Connected Graph"
+    layout_title_style . font_size .= 10
+    layout_x_axis . laxis_generate .= autoIndexAxis (map fst values)
+    plot $ fmap plotBars $ bars titles (addIndexes (map snd values))
+
+plotItDegree filename values = toFile def filename $ do
+    layout_title .= "Degrees Per Edges"
     layout_title_style . font_size .= 10
     layout_x_axis . laxis_generate .= autoIndexAxis (map fst values)
     plot $ fmap plotBars $ bars titles (addIndexes (map snd values))

@@ -16,8 +16,8 @@ createGraph number = foldr (\x graph -> Map.insert x Set.empty graph) Map.empty 
 degree :: Graph Int -> Int -> Maybe Int
 degree g v = let l = Map.lookup v g in Set.size `fmap` l
 
-degrees :: Graph Int -> [(Int,Rational)]
-degrees graph = map (\k -> (k,toRational $ fromJust $ degree graph k)) $ Map.keys graph
+degrees :: Graph Int -> [(Int,Int)]
+degrees graph = map (\k -> (k,(1+) $ fromJust $ degree graph k)) $ Map.keys graph
 
 addEdge :: Graph Int -> (Int,Int) -> Graph Int
 addEdge graph (v1,v2) =
