@@ -25,6 +25,8 @@ Class exercise regarding the random generation of connected graphs, with benchma
 command:
 > pref 10 50
 ```
+
 Result:
+
 ![avg_edges](./images/res_avg_pref_50.png "Average Edges")
 ![degree_nodes](./images/res_degree_pref_50.png "Degree per node")
