@@ -7,6 +7,10 @@ import Control.Monad.State.Lazy
 import Control.Monad
 import Control.Monad.Reader
 import qualified Data.Set as Set
+import qualified Data.Text.Lazy as Text
+import Data.GraphViz.Types
+import Data.GraphViz.Commands
+import Data.GraphViz.Types.Generalised
 
 type Graph a = Map.IntMap (Set.Set a)
 
@@ -47,3 +51,21 @@ visit a = do
 
 breadthFirstTraverse :: [Int] -> Reader (Graph Int) [[Int]]
 breadthFirstTraverse as = breadthFirst visit as `evalStateT` Set.fromList as
+
+graphVizRepresentation :: (Graph Int) -> (Map.IntMap Bool) -> String
+graphVizRepresentation g colors =
+  let nodes = Map.keys g
+      header = "graph G {\n"
+      footer = "}\n"
+      colorList = Map.foldrWithKey (\key b accum -> if b then (colorize key "blue")++accum else accum) [] colors
+      middle = Map.foldrWithKey foldr_aux [] g 
+  in header++colorList++middle++footer
+  where
+    foldr_aux node neighbours accum = accum++ (concat $ Set.map (\x -> edgerize node x) neighbours)
+    colorize n color = "\""++(show n)++"\" "++"["++"style=filled,color="++color++"];\n" 
+    edgerize l r = if l<r then "  "++(show l)++" -- "++(show r)++";\n" else ""
+
+publishGraphVizRepr :: String -> FilePath -> IO FilePath
+publishGraphVizRepr s fp = 
+  let g = (parseDotGraph $ Text.pack s) :: DotGraph String 
+  in runGraphviz g Png fp

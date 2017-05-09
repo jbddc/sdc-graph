@@ -26,3 +26,5 @@ executable graph
                       , Chart
                       , Chart-cairo
                       , QuickCheck
+                      , text
+                      , graphviz
