@@ -1,7 +1,6 @@
 module Bfs where
 
 import Graph
-import RandomAttachment
 import System.Random
 import Data.Maybe
 import Data.List
@@ -26,18 +25,26 @@ treeAppend (pai,filho) (Node n l)
 isPresent :: Int -> (Tree Int) -> Bool
 isPresent x t = x `elem` (flatten t)
 
+treeEdgerize :: Tree Int -> [(Int,Int)]
+treeEdgerize (Node n []) = []
+treeEdgerize (Node n l) = 
+    let 
+        curr = map (\(Node s _) -> (n,s)) l
+        sons = concat $ map treeEdgerize l
+    in curr++sons
+
 treeGraphVizRepresentation :: (Tree Int) -> String
 treeGraphVizRepresentation t =
   let
       header = "digraph G {\n  nodesep=0.3;\n  ranksep=0.2;\n  margin=0.1;\n  node [shape=circle];\n"
       footer = "}\n"
-      middle = foldTree (\n l -> concat $ map (edgerize n) l) t 
+      middle = concat $ map edgerize $ treeEdgerize t 
   in header++middle++footer
   where
-    edgerize l r = "  "++(show l)++" -> "++(show r)++";\n" 
+    edgerize (l,r) = "  "++(show l)++" -> "++(show r)++";\n" 
 
 printTree :: FilePath -> Tree Int -> IO ()
-printTree = undefined 
+printTree dir t =  publishGraphVizRepr (treeGraphVizRepresentation t) dir >>= \x -> putStrLn $ "Printed tree on "++x++"!"
 
 getDirName :: IO FilePath
 getDirName = do
@@ -45,20 +52,27 @@ getDirName = do
     if resp then getDirAux 0 else return "result/"
   where getDirAux n = doesDirectoryExist ("result"++(show n)++"/") >>= \x -> if x then getDirAux (n+1) else return $ "result"++(show n)++"/"
 
-runBfs :: Int -> Int -> IO ()
-runBfs n start_node = do
+runBfs :: (Int -> IO ((Graph Int),Int)) -> Int -> Int -> IO ()
+runBfs f n start_node = do
     dirName <- getDirName
     createDirectory dirName
-    (g,_) <- runRandomAttachment n
+    (g,_) <- f n
     runBfs_aux dirName g [(-1,start_node)] Nothing
 
 runBfs_aux :: FilePath -> (Graph Int) -> [(Int,Int)] -> Maybe (Tree Int) -> IO ()
-runBfs_aux dirName _ [] (Just t) = printTree dirName t
+runBfs_aux dirName _ [] (Just t) = printTree (dirName++"final_tree.png") t
 runBfs_aux dirName g ((_,h):[]) Nothing =
     let
         tree = Node h []
         next_iter = map (\a -> (h,a)) $ Set.toList (maybe Set.empty id (Map.lookup h g))
-    in runBfs_aux dirName g next_iter (Just tree)
+        col = foldr (\x m -> Map.insert x True m) Map.empty (flatten tree)
+        gvr = graphVizRepresentation g col
+    in 
+        do
+            let fname = ("bfs_step_0.png")
+            path <- publishGraphVizRepr gvr (dirName++fname) 
+            putStrLn $ "Written graph "++fname++"!"
+            runBfs_aux dirName g next_iter (Just tree)
 runBfs_aux _ _ _ Nothing = putStrLn "Algorithm Error!"
 runBfs_aux dirName g grey (Just t) =
     let
@@ -70,16 +84,6 @@ runBfs_aux dirName g grey (Just t) =
         gvr = graphVizRepresentation g col
     in
         do
-            putStr "grey: "
-            print grey
-            putStr "next_iter: "
-            print next_iter
-            putStr "graph: "
-            print g
-            putStr "old tree: "
-            print t
-            putStr "new tree: "
-            print new_tree
             let fname = ("bfs_step_"++(show (depth t))++".png")
             path <- publishGraphVizRepr gvr (dirName++fname) 
             putStrLn $ "Written graph "++fname++"!"

@@ -1,6 +1,7 @@
 module Main where
 
 import Graph
+import Bfs
 import RandomAttachment
 import PrefAttachment
 import System.Environment
@@ -28,11 +29,16 @@ runCmd s = let
   in case w!!0 of
      "random" -> shellExec runRandomAttachment w 
      "pref" -> shellExec runPrefAttachment w
-     "bfs"  -> bfsExec undefined w
+     "bfs"  -> bfsExec w
      "exit" -> return False
      _ -> printHelp >> return True
 
-bfsExec = undefined
+bfsExec [cm,algo,size,start_node] =
+    case algo of
+        "pref" -> runBfs runPrefAttachment (read size :: Int) (read start_node :: Int) >> return True
+        "random" -> runBfs runRandomAttachment (read size :: Int) (read start_node :: Int) >> return True 
+        _ -> printHelp >> return True 
+bfsExec _ = printHelp >> return True
 
 shellExec :: (Int -> IO ((Graph Int),Int)) -> [String] -> IO Bool
 shellExec cmd (cm:(scl:(x:[]))) = do
@@ -52,7 +58,7 @@ myCompFunc (x1,y1) (x2,y2)
   | y1 > y2 = LT
   | otherwise = EQ
 
-printHelp = putStrLn "===Available Commands===\nrandom [scale] [upperbound]\npref [scale] [upperbound]\nhelp\nexit"
+printHelp = putStrLn "===Available Commands===\nrandom [scale] [upperbound]\npref [scale] [upperbound]\nbfs [pref/random] [size] [start_node]\nhelp\nexit"
 
 list_scale scale ub = takeWhile (<=ub) $ map (\x -> scale*x) [2..]
 
