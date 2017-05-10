@@ -65,8 +65,7 @@ graphVizRepresentation g colors =
     colorize n color = "\""++(show n)++"\" "++"["++"style=filled,color="++color++"];\n" 
     edgerize l r = if l<r then "  "++(show l)++" -- "++(show r)++";\n" else ""
 
-publishGraphVizRepr :: String -> FilePath -> IO ()
+publishGraphVizRepr :: String -> FilePath -> IO FilePath
 publishGraphVizRepr s fp = 
   let g = (parseDotGraph $ Text.pack s) :: DotGraph String 
-  --in runGraphviz g Png fp
-  in runGraphvizCanvas' g Xlib
+  in runGraphviz g Png fp
