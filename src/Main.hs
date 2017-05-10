@@ -28,8 +28,11 @@ runCmd s = let
   in case w!!0 of
      "random" -> shellExec runRandomAttachment w 
      "pref" -> shellExec runPrefAttachment w
+     "bfs"  -> bfsExec undefined w
      "exit" -> return False
      _ -> printHelp >> return True
+
+bfsExec = undefined
 
 shellExec :: (Int -> IO ((Graph Int),Int)) -> [String] -> IO Bool
 shellExec cmd (cm:(scl:(x:[]))) = do
