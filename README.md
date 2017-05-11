@@ -46,7 +46,7 @@ Step 0
 
 ![step_0](./images/part2_result/bfs_step_0.png "Step 0")
 
-## (...)
+(...)
 
 Final Step
 
